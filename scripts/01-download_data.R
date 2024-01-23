@@ -206,6 +206,8 @@ august_casual_start_frequency |>
   ggplot(aes(y=start_station_name)) + 
   geom_bar(aes(x = frequency), stat = "identity", position = "dodge") 
 
+pie(august_annual_start_frequency$frequency,
+    labels=august_annual_start_frequency$start_station_name)
 
 
 # for each of the three months, which type of user is more likely
@@ -231,18 +233,81 @@ all_user_count_stats <-
   rbind(june_user_count_stats, july_user_count_stats, august_user_count_stats)
 
 ggplot(all_user_count_stats, aes(fill=month, y=total, x=user_type)) + 
-  geom_bar(position="dodge", stat="identity")
+  geom_bar(position="fill", stat="identity")
+
+
+# start times: when a user starts their journey
+june_data_clean$start_time <- 
+  strptime(june_data_clean$start_time, format="%m/%d/%Y %H:%M")
+june_data_clean$start_by_hour <- format(june_data_clean$start_time, "%H")
+
+june_hourly_frequency <- 
+  june_data_clean |>
+  group_by(start_by_hour) |>
+  summarise(count_s = n())   
+
+july_data_clean$start_time <- 
+  strptime(july_data_clean$start_time, format="%m/%d/%Y %H:%M")
+july_data_clean$start_by_hour <- format(july_data_clean$start_time, "%H")
+
+july_hourly_frequency <- 
+  july_data_clean |>
+  group_by(start_by_hour) |>
+  summarise(count_s = n())  
 
 
 
+august_data_clean$start_time <- 
+  strptime(august_data_clean$start_time, format="%m/%d/%Y %H:%M")
+august_data_clean$start_by_hour <- format(august_data_clean$start_time, "%H")
 
-breaks <- seq(0, 60, by = 5)
+august_hourly_frequency <- 
+  august_data_clean |>
+  group_by(start_by_hour) |>
+  summarise(count_s = n())   
+
+
+
+# graph of start times
+# june
+june_hourly_frequency |>
+  ggplot(aes(x = start_by_hour, y=count_s)) +
+  geom_bar(stat="identity") 
+
+# july
+july_hourly_frequency |>
+  ggplot(aes(x = start_by_hour, y=count_s)) +
+  geom_bar(stat="identity") 
+
+# august
+august_hourly_frequency |>
+  ggplot(aes(x = start_by_hour, y=count_s)) +
+  geom_bar(stat="identity") 
+
+
+
+# this section is for that part where only one type of user dominates
+breaks <- seq(0, 30, by = 5)
+june_data_clean$intervals <- cut(june_data_clean$duration, breaks, include.lowest = TRUE, labels = FALSE)
+interval_labels <- paste((breaks[-length(breaks)]), "-", breaks[-1])
+june_data_clean$interval  <- interval_labels[june_data_clean$intervals]
+
+june_start_time_slots <-
+  subset(june_data_clean, duration <= 30) |>
+  group_by(interval) |>
+  summarise(count_slot = n())  
+
+
+june_start_time_slots |>
+  ggplot(aes(x = interval, y=count_slot)) +
+  geom_bar(stat="identity") 
+
 
 data_clean_4$periods <- cut(data_clean_4$duration, breaks, labels = FALSE)
 
 # per period
-data_clean_4 |>
-  ggplot(aes(x = start_station_name)) +
+june_data_clean |>
+  ggplot(aes(x = intervals, y = )) +
   geom_bar() 
 
 group_start <- 
