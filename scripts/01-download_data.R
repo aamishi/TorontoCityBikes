@@ -83,39 +83,109 @@ august_data_clean <-
 # generating june data for annual and casual members
 
 june_annual_data <- subset(june_data_clean, user_type == "Annual Member") |>
+  subset(end_station_name != "NULL") |>
+  subset(start_station_name != "NULL") |>
   select("id", "duration", 
             "start_time", "start_station_name", 
             "end_time", "end_station_name") 
+  
 
 june_casual_data <- subset(july_data_clean, user_type == "Casual Member") |>
+  subset(end_station_name != "NULL") |>
+  subset(start_station_name != "NULL") |>
   select("id", "duration", 
          "start_time", "start_station_name", 
          "end_time", "end_station_name") 
 
 # generating july data for annual and casual members
 july_annual_data <- subset(july_data_clean, user_type == "Annual Member") |>
+  subset(end_station_name != "NULL") |>
+  subset(start_station_name != "NULL") |>
   select("id", "duration", 
          "start_time", "start_station_name", 
          "end_time", "end_station_name") 
 
 july_casual_data <- subset(july_data_clean, user_type == "Casual Member") |>
+  subset(end_station_name != "NULL") |>
+  subset(start_station_name != "NULL") |>
   select("id", "duration", 
          "start_time", "start_station_name", 
          "end_time", "end_station_name") 
 
 # generating august data for annual and casual members
-august_annual_data <- subset(august_data_clean, user_type == "Annual Member") |>
+august_annual_data <- subset(august_data_clean, user_type == "Annual Member" &
+                               end_station_name != "NULL" & 
+                               start_station_name != "NULL") |>
   select("id", "duration", 
          "start_time", "start_station_name", 
          "end_time", "end_station_name") 
 
 august_casual_data <- subset(august_data_clean, user_type == "Casual Member") |>
+  subset(end_station_name != "NULL") |>
+  subset(start_station_name != "NULL") |>
   select("id", "duration", 
          "start_time", "start_station_name", 
          "end_time", "end_station_name") 
 
+# june start stations frequency: how often was this station used as a start
+june_annual_start_frequency <- 
+  june_annual_data |>
+  group_by(start_station_name) |>
+  summarise(frequency = n())
 
-casual <-  subset(data_clean, user_type == "Casual Member")
+june_casual_start_frequency <- 
+  june_casual_data |>
+  group_by(start_station_name) |>
+  summarise(frequency = n())
+
+# top 10 most used stations by annual and casual and then together
+june_most_used_start_station_annual <-
+  june_annual_start_frequency |>
+  arrange(desc(frequency)) |> 
+  slice(1:10) 
+
+june_most_used_start_station_casual <-
+  june_casual_start_frequency |>
+  arrange(desc(frequency)) |> 
+  slice(1:10) 
+
+# union
+june_most_used_start_station_all <-
+  union(june_most_used_start_station_annual$start_station_name,
+        june_most_used_start_station_casual$start_station_name)
+june_most_used_start_station_all
+
+june_most_used_start_station_annual_all <-
+  june_most_used_start_station_annual |>
+  arrange(desc(frequency)) |> 
+  slice(1:10) 
+  
+combined_df <- merge(june_most_used_start_station_annual, 
+                     june_most_used_start_station_casual, 
+                     by = 'start_station_name', all = TRUE)
+
+
+
+plot1 <-june_most_used_start_station_annual |> 
+ggplot(aes(y=start_station_name)) +
+geom_bar(aes(x = frequency, fill="red"), stat = "identity", position = "dodge") 
+
+plot2 <-june_most_used_start_station_casual |> 
+  ggplot(aes(y=start_station_name)) + 
+geom_bar(aes(x = frequency, fill="yellow"), stat = "identity", position = "dodge") 
+
+combined_plot <- plot1 + plot2 + plot_layout(ncol = 1)
+
+
+
+june_casual_start_frequency |>
+  arrange(desc(frequency)) |> 
+  slice(1:10) |>
+  ggplot(aes(y = start_station_name, x = frequency)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black")
+
+
+
 data_clean_3 <- subset(data_clean_2, 1.00 <= duration)
 casual_2 <- subset(casual, 1.00 <= duration)
 data_clean_4 <- subset(data_clean_3, duration <= 60)
