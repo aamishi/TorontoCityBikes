@@ -54,8 +54,10 @@ august_data_clean <-
 
 
 
-# Save cleaned MONTHLY
-write_csv(cleaned_subway_codes, 'inputs/data/subway_delay_codes.csv')
+# Save cleaned MONTHLY data to a parquet file
+write_parquet(june_data_clean, 'outputs/data/june_data_clean.parquet')
+write_parquet(july_data_clean, 'outputs/data/july_data_clean.parquet')
+write_parquet(august_data_clean, 'outputs/data/august_data_clean.parquet')
 
 
 
